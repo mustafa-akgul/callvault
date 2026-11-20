@@ -1,0 +1,7 @@
+psycopg[binary]==3.2.13
+httpx==0.28.1
+cryptography==48.0.1
+rich==15.0.0
+# Optional local STT (STT_PROVIDER=faster_whisper), not installed by default:
+# faster-whisper
+pytest==9.0.2

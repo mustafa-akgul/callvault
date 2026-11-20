@@ -1,0 +1,7 @@
+.git
+.env
+crm-sim/state.json
+**/__pycache__
+.pytest_cache
+.venv
+*.log

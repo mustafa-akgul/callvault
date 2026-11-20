@@ -1,0 +1,122 @@
+# One command: `docker compose up --build`
+# Scale workers: `docker compose up --build --scale worker=3`
+# Tests:         `docker compose run --rm tests`
+#
+# Database passwords below are local-development defaults for a database that only
+# exists inside this compose project. Override them in `.env` (see .env.example).
+
+x-app-env: &app-env
+  PGHOST: db
+  PGPORT: "5432"
+  PGDATABASE: callvault
+  POSTGRES_ADMIN_USER: postgres
+  POSTGRES_ADMIN_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+  APP_OWNER_PASSWORD: ${APP_OWNER_PASSWORD:-owner_dev_pw}
+  APP_WORKER_PASSWORD: ${APP_WORKER_PASSWORD:-worker_dev_pw}
+  APP_USER_PASSWORD: ${APP_USER_PASSWORD:-user_dev_pw}
+  CRM_BASE_URL: http://crm:8080
+  MANIFEST_PATH: /app/data/manifest.json
+  LEASE_SECONDS: ${LEASE_SECONDS:-60}
+  HEARTBEAT_SECONDS: ${HEARTBEAT_SECONDS:-15}
+  MAX_ATTEMPTS: ${MAX_ATTEMPTS:-5}
+  # Raw transcripts are AES-GCM encrypted; `migrate` creates this key in the `keys`
+  # volume on first start (or set TRANSCRIPT_KEY in .env).
+  TRANSCRIPT_KEY_FILE: /keys/transcript.key
+  STT_PROVIDER: ${STT_PROVIDER:-groq}
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  crm:
+    build: ./crm-sim
+    environment:
+      CHAOS: ${CHAOS:-1}
+      CHAOS_SEED: ${CHAOS_SEED:-}
+    volumes:
+      - crmdata:/data
+    ports:
+      - "${CRM_PORT:-8080}:8080"   # host port only; services use crm:8080
+
+  # Creates roles + database (as superuser), then applies migrations as app_owner.
+  migrate:
+    build: .
+    command: ["python", "-m", "app.cli", "migrate"]
+    environment: *app-env
+    volumes:
+      - keys:/keys
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Reads manifest.json, hashes audio, enqueues one job per recording. Idempotent.
+  ingest:
+    build: .
+    command: ["python", "-m", "app.cli", "ingest"]
+    environment: *app-env
+    volumes:
+      - ./samples:/app/data:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    build: .
+    command: ["python", "-m", "app.cli", "worker"]
+    environment: *app-env
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./samples:/app/data:ro
+      - keys:/keys:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      crm:
+        condition: service_started
+    stop_grace_period: 30s
+
+  tests:
+    build: .
+    profiles: ["test"]
+    command: ["python", "-m", "pytest", "-q"]
+    environment:
+      <<: *app-env
+      PGDATABASE: callvault_test
+    volumes:
+      - ./samples:/app/data:ro
+      - ./tests:/app/tests:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Live failure demo: `docker compose run --rm demo`. Uses its own private CHAOS=1
+  # crm-sim and a synthetic `demo` tenant, so the real dataset is not touched.
+  demo:
+    build: .
+    profiles: ["demo"]
+    command: ["python", "-m", "app.cli", "demo-chaos"]
+    environment: *app-env
+    volumes:
+      - keys:/keys:ro
+    tty: true
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:
+  crmdata:
+  keys:
