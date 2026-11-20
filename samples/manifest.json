@@ -1,0 +1,58 @@
+{
+  "tenants": [
+    {
+      "id": "harbor",
+      "name": "Harbor Call Center (synthetic)"
+    }
+  ],
+  "recordings": [
+    {
+      "id": "call_01",
+      "tenant_id": "harbor",
+      "file": "call_01.wav",
+      "language": "tr",
+      "channel": "phone",
+      "recorded_at": "2026-10-30T09:01:00+03:00"
+    },
+    {
+      "id": "call_02",
+      "tenant_id": "harbor",
+      "file": "call_02.wav",
+      "language": "tr",
+      "channel": "phone",
+      "recorded_at": "2026-10-30T09:02:00+03:00"
+    },
+    {
+      "id": "call_03",
+      "tenant_id": "harbor",
+      "file": "call_03.wav",
+      "language": "tr",
+      "channel": "phone",
+      "recorded_at": "2026-10-30T09:03:00+03:00"
+    },
+    {
+      "id": "call_04",
+      "tenant_id": "harbor",
+      "file": "call_04.wav",
+      "language": "tr",
+      "channel": "phone",
+      "recorded_at": "2026-10-30T09:04:00+03:00"
+    },
+    {
+      "id": "call_05_duplicate_of_01",
+      "tenant_id": "harbor",
+      "file": "call_05_duplicate_of_01.wav",
+      "language": "tr",
+      "channel": "phone",
+      "recorded_at": "2026-10-30T09:05:00+03:00"
+    },
+    {
+      "id": "call_06_truncated",
+      "tenant_id": "harbor",
+      "file": "call_06_truncated.wav",
+      "language": "tr",
+      "channel": "phone",
+      "recorded_at": "2026-10-30T09:06:00+03:00"
+    }
+  ]
+}
