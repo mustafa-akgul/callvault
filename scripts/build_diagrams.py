@@ -270,9 +270,18 @@ def social() -> None:
     s.save("social-preview.svg")
 
 
+def dark_variants() -> None:
+    from darkmode import to_dark
+    for name in ("hero", "architecture", "exactly-once", "tenant-model"):
+        src = OUT / f"{name}.svg"
+        (OUT / f"{name}-dark.svg").write_text(to_dark(src.read_text(encoding="utf-8")),
+                                              encoding="utf-8")
+
+
 if __name__ == "__main__":
     social()
     hero()
     architecture()
     exactly_once()
     tenant_model()
+    dark_variants()

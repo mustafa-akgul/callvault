@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="docs/img/hero.svg" alt="Callvault: no recording lost, no duplicate booking" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/img/hero-dark.svg">
+    <img src="docs/img/hero.svg" alt="Callvault: no recording lost, no duplicate booking" width="100%">
+  </picture>
 </p>
 
 # Callvault
@@ -8,6 +11,10 @@
 Turkish call-center audio, masks personal data, keeps every tenant's data behind PostgreSQL
 row-level security, and files meetings and complaints in an unreliable CRM exactly once, even
 when workers are killed mid-job.
+
+<p align="center">
+  <a href="https://github.com/mustafa-akgul/callvault/actions/workflows/ci.yml"><img src="https://github.com/mustafa-akgul/callvault/actions/workflows/ci.yml/badge.svg" alt="tests"></a>
+</p>
 
 <p align="center"><a href="#see-it-fail-safely">Demo</a> · <a href="#architecture">Architecture</a> · <a href="#quick-start">Quick start</a> · <a href="docs/DECISIONS.md">36 decisions</a> · <a href="docs/CASE_STUDY.md">Case study</a></p>
 
@@ -49,7 +56,10 @@ so the retry counts change from run to run. The verdict lines must not.
 ## Architecture
 
 <p align="center">
-  <img src="docs/img/architecture.svg" alt="Architecture: ingestion, pipeline and CRM delivery layers on PostgreSQL with row-level security" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/img/architecture-dark.svg">
+    <img src="docs/img/architecture.svg" alt="Architecture: ingestion, pipeline and CRM delivery layers on PostgreSQL with row-level security" width="100%">
+  </picture>
 </p>
 
 Every arrow between steps is one database transaction: a step's output and the job's next
@@ -60,7 +70,10 @@ PROCESSING_CRM → COMPLETED`, or `FAILED` (with step, error code and message), 
 ### The hard part: a CRM that lies about failures
 
 <p align="center">
-  <img src="docs/img/exactly-once.svg" alt="Sequence: outbox row, GET, POST, lost reply, GET again, adopt the booking" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/img/exactly-once-dark.svg">
+    <img src="docs/img/exactly-once.svg" alt="Sequence: outbox row, GET, POST, lost reply, GET again, adopt the booking" width="100%">
+  </picture>
 </p>
 
 A timeout does not mean the write failed. The CRM may have committed and then dropped the
@@ -71,7 +84,10 @@ attempt, and only picks a different slot (with a different key) after an explici
 ### Tenant isolation that fails closed
 
 <p align="center">
-  <img src="docs/img/tenant-model.svg" alt="API key sets tenant context; a query without context raises an error" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/img/tenant-model-dark.svg">
+    <img src="docs/img/tenant-model.svg" alt="API key sets tenant context; a query without context raises an error" width="100%">
+  </picture>
 </p>
 
 The tenant is derived from a hashed API key, never from a free-form flag. Application roles
